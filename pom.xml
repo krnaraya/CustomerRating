@@ -5,7 +5,7 @@
   <groupId>com.redhat.experience</groupId>
   <artifactId>CustomerRating</artifactId>
   <packaging>jar</packaging>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.8.3</version>
   <name>Rules Demo</name>
   <url>http://maven.apache.org</url>
 
@@ -14,7 +14,7 @@
       <repository>
         <id>guvnor-m2-repo</id>
         <name>maven repo</name>
-        <url>http://localhost:8080/business-central/maven2/</url>
+        <url>http://localhost:8080/decision-central/maven2/</url>
         <layout>default</layout>
       </repository>
 </distributionManagement>
@@ -24,11 +24,12 @@
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
       <version>20180130</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>2.6</version>
+      <version>2.5</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -36,38 +37,11 @@
       <version>4.8.1</version>
       <scope>test</scope>
     </dependency>
-	<dependency>
-	    <groupId>javax.ws.rs</groupId>
-	    <artifactId>javax.ws.rs-api</artifactId>
-	    <version>2.0</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.jboss.resteasy</groupId>
-	    <artifactId>resteasy-client</artifactId>
-	    <version>3.0.2.Final</version>
+    <dependency>
+		<groupId>org.apache.httpcomponents</groupId>
+		<artifactId>httpclient</artifactId>
+		<version>4.5.4</version>
 	</dependency>
   </dependencies>
-  
-  <build>
-    <plugins>
-      <!-- any other plugins -->
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <descriptorRefs>
-            <descriptorRef>jar-with-dependencies</descriptorRef>
-          </descriptorRefs>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
 </project>

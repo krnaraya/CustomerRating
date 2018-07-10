@@ -1,14 +1,19 @@
 package com.redhat.experience.service;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.MediaType;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import com.redhat.experience.model.JsonPassengerReader;
 import com.redhat.experience.model.Passenger;
@@ -42,13 +47,27 @@ public class CustomerService {
 	
 	public List<Passenger> retrievePassengersFromRest(String flightNumber) throws IOException {
 		// dummy argument flightNumber, hard coded response in demo
-		Client client = ClientBuilder.newClient();
+/*		Client client = ClientBuilder.newClient();
 		String content =  client.target(resourceName + flightNumber)
 				.request(MediaType.APPLICATION_JSON)
-				.get(String.class);
+				.get(String.class);*/
 		// hack to force convert "pcv" to "PCV"!
-//		System.out.println("***********");
-//		System.out.println(content);
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpGet getRequest = new HttpGet(resourceName + flightNumber);
+		getRequest.addHeader("accept", "application/json");
+
+		HttpResponse response = httpClient.execute(getRequest);
+
+		if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+			   + response.getStatusLine().getStatusCode());
+		}
+
+		String content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		httpClient.getConnectionManager().shutdown();
+
+		System.out.println("***********");
+		System.out.println(content);
 		return JsonPassengerReader.read(content.replaceAll("\"pcv\"", "PCV"));
 	}
 	public void sortSmallestFirst(List<Passenger> passengers) {
@@ -91,11 +110,34 @@ public class CustomerService {
 	}
 	
 	public void sendVipList(String flightNumber, int count) throws IOException {
-		Client client = ClientBuilder.newClient();
+/*		Client client = ClientBuilder.newClient();
 		List<Passenger> topList = new ArrayList<Passenger>();
 		topList = getNLowestPcvCustomersFromRest(flightNumber, count);
 		client.target(resourceName + flightNumber).request()
-				.post(Entity.entity(JsonPassengerReader.toJson(topList), MediaType.APPLICATION_JSON));
+				.post(Entity.entity(JsonPassengerReader.toJson(topList), MediaType.APPLICATION_JSON));*/
+		
+		List<Passenger> topList = new ArrayList<Passenger>();
+		topList = getNLowestPcvCustomersFromRest(flightNumber, count);
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpPost postRequest = new HttpPost(resourceName + flightNumber);
+
+		StringEntity input = new StringEntity(JsonPassengerReader.toJson(topList));
+		input.setContentType("application/json");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+		if (response.getStatusLine().getStatusCode() != 201) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+		
+		String content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		System.out.println("***********");
+		System.out.println(content);
+		httpClient.getConnectionManager().shutdown();
+
+
 
 	}
 	
