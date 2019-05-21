@@ -16,7 +16,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import com.redhat.experience.model.JsonPassengerReader;
-import com.redhat.experience.model.Passenger;
+
+import demo.rules.experience.Passenger;
+//import com.redhat.experience.model.Passenger;
 
 public class CustomerService {
 	
@@ -45,6 +47,7 @@ public class CustomerService {
 		return reader.readFromResource();
 	}
 	
+	// ---------------------------- used in external REST call demo ------------------------------------
 	public List<Passenger> retrievePassengersFromRest(String flightNumber) throws IOException {
 		// dummy argument flightNumber, hard coded response in demo
 /*		Client client = ClientBuilder.newClient();
@@ -140,10 +143,64 @@ public class CustomerService {
 
 
 	}
+
+/* new methods for illustrating calling external services
+ * 
+ */
+	// ---------------------------- used in external REST call demo ------------------------------------
+	public void sendVip(String flightNumber, Passenger passenger) throws IOException {
+
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpPost postRequest = new HttpPost(resourceName + "vip/" + flightNumber);
+
+		StringEntity input = new StringEntity(JsonPassengerReader.toJson(passenger));
+		input.setContentType("application/json");
+		postRequest.setEntity(input);
+
+		HttpResponse response = httpClient.execute(postRequest);
+
+		if (response.getStatusLine().getStatusCode() != 201) {
+			throw new RuntimeException("Failed : HTTP error code : "
+				+ response.getStatusLine().getStatusCode());
+		}
+		
+		String content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		System.out.println("***********");
+		System.out.println(content);
+		httpClient.getConnectionManager().shutdown();
+
+	}
 	
+	// ---------------------------- used in external REST call demo ------------------------------------
+	public List<Passenger> getTopList(List<Passenger> passengerList, long count) throws IOException {
+
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpPost postRequest = new HttpPost(resourceName + "sort/" + count);
+		StringEntity input = new StringEntity(JsonPassengerReader.toJson(passengerList));
+		input.setContentType("application/json");
+		postRequest.setEntity(input);
+		HttpResponse response = httpClient.execute(postRequest);
+
+		if (response.getStatusLine().getStatusCode() != 200) {
+			throw new RuntimeException("Failed : HTTP error code : "
+			   + response.getStatusLine().getStatusCode());
+		}
+
+		String content = IOUtils.toString(response.getEntity().getContent(), "UTF-8");
+		httpClient.getConnectionManager().shutdown();
+
+		System.out.println("***********");
+		System.out.println(content);
+		return JsonPassengerReader.read(content.replaceAll("\"pcv\"", "PCV"));
+	}
+
+	
+/* new methods for illustrating calling external services
+ * 
+ */
 	public static void main(String[] args) throws IOException {
 		List<Passenger> topList = new ArrayList<Passenger>();
-		CustomerService service = new CustomerService(SAMPLE_PASSENGER_JSON_RESOURCE);
+/*		CustomerService service = new CustomerService(SAMPLE_PASSENGER_JSON_RESOURCE);
 		topList = service.getNLowestPcvCustomersFromResource("81", 3);
 		System.out.println("***********");
 		System.out.println("Top N List:...");
@@ -156,7 +213,30 @@ public class CustomerService {
 		System.out.println("***********");
 		System.out.println("******Testing sendVipList*****");
 		CustomerService restService = new CustomerService();
-		restService.sendVipList("83", 3);
+		restService.sendVipList("83", 3);*/
+		
+		CustomerService service = new CustomerService();
+		topList = service.retrievePassengersFromRest("81");
+		System.out.println("***********");
+		System.out.println("Passenger List:...");
+		System.out.println("***********");
+		for (Passenger passenger : topList) {
+			System.out.println(passenger);
+			System.out.println("-----------");
+		}
+		
+		Passenger passenger = new Passenger("master",
+				"Lenore", "Carr", "Church", 70374);
+		service.sendVip("83", passenger);
+		
+		topList = service.getTopList(topList, 3);
+		System.out.println("***********");
+		System.out.println("Top Passenger List:...");
+		System.out.println("***********");
+		for (Passenger topPassenger : topList) {
+			System.out.println(topPassenger);
+			System.out.println("-----------");
+		}
 	}
 
 }

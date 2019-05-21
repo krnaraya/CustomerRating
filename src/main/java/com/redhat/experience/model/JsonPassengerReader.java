@@ -11,7 +11,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-
+import demo.rules.experience.Passenger;
 
 public class JsonPassengerReader {
 	
@@ -64,6 +64,21 @@ public class JsonPassengerReader {
 		System.out.println(array.toString());
 		return array.toString();
 	}
+	
+	public static String toJson(Passenger passenger) throws IOException {
+
+	     JSONObject obj = new JSONObject();
+	     obj.put("prefix", passenger.getPrefix())
+	     	.put("firstName", passenger.getFirstName())
+	     	.put("middleName", passenger.getMiddleName())
+	     	.put("surName", passenger.getSurName())
+	     	.put("PCV", passenger.getPCV()
+	     	);
+
+		System.out.println(obj.toString());
+		return obj.toString();
+	}
+	
 	public JsonPassengerReader(String resourceName) {
 		this.resourceName = resourceName;
 	}

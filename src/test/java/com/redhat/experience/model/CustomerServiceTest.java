@@ -10,6 +10,8 @@ import org.junit.Test;
 
 import com.redhat.experience.service.CustomerService;
 
+import demo.rules.experience.Passenger;
+
 public class CustomerServiceTest {
 
 	@Test

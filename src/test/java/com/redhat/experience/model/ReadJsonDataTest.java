@@ -8,7 +8,8 @@ import java.util.List;
 import org.junit.Test;
 
 import com.redhat.experience.model.JsonPassengerReader;
-import com.redhat.experience.model.Passenger;
+//import com.redhat.experience.model.Passenger;
+import demo.rules.experience.Passenger;
 
 
 public class ReadJsonDataTest {
